@@ -2,6 +2,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Optional
+import google.generativeai as genai
 from dotenv import load_dotenv
 import requests
 import os
@@ -12,6 +13,26 @@ load_dotenv()
 # Configuración de API Gemini
 gemini_api_key = os.getenv("GEMINI_API_KEY")
 gemini_base_url = "https://api.gemini.com/v1"
+
+
+genai.configure(api_key=gemini_api_key)   # cuidado con esto y los prompts de la version gratuita
+
+
+# Configurar la clave de la API de Gemini
+def generar_respuesta(prompt):
+    """
+    Envía un prompt a Gemini y devuelve la respuesta generada.
+    """
+    try:
+        # Cargar el modelo
+        model = genai.GenerativeModel("gemini-1.5-flash")
+        # Generar contenido
+        response = model.generate_content(prompt)
+        # Extraer texto generado
+        return response.text
+    except Exception as e:
+        return f"Error al generar respuesta: {str(e)}"
+
 
 # Instancia de FastAPI
 app = FastAPI()
