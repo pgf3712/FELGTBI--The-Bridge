@@ -8,7 +8,7 @@ app = FastAPI()
 
 # Clases 
 
-class DatosUsuario(BaseModel):
+class Usuario(BaseModel):
     tipo: Literal["usuario"]
     genero: str
     orien_sex: str
@@ -16,14 +16,19 @@ class DatosUsuario(BaseModel):
     pais: str
     provincia: str
 
-class DatosProfesional(BaseModel):
+class Profesional(BaseModel):
     tipo: Literal["profesional"]
     provincia: str
     cod_postal: int
     especialidad_id: int
 
+class Interaction(BaseModel):
+    interactor_id: int
+    pregunta_id: int
+    respuesta_id: int
+
 # Si unimos las clases, podremos diferenciarlas al pasarlas como parametros en el endpoint add_user
-UserType = Union[DatosUsuario, DatosProfesional]
+UserType = Union[Usuario, Profesional]
 
 @app.get("/")
 def home():
@@ -35,7 +40,7 @@ def get_info(user_rol:str):
         conn = open_database()
         cursor = conn.cursor()
         query = f"""
-                SELECT pr.pregunta_id, pr.respuesta_id, p.pregunta, r.respuesta, p.rol 
+                SELECT pr.pregunta_id, pr.respuesta_id, p.pregunta, r.respuesta, p.rol, r.fin 
                 FROM preguntas_respuestas as pr
                 INNER JOIN preguntas as p ON pr.pregunta_id = p.pregunta_id
                 INNER JOIN respuestas as r ON pr.respuesta_id = r.respuesta_id
@@ -54,7 +59,7 @@ def add_user(user_type: UserType):
         conn = open_database()
         cursor = conn.cursor()
 
-        if isinstance(user_type, DatosUsuario):
+        if isinstance(user_type, Usuario):
              query = """
                     INSERT INTO usuarios (genero, orien_sex, edad, pais, provincia)
                         VALUES (%s, %s, %s, %s, %s)
@@ -62,8 +67,7 @@ def add_user(user_type: UserType):
              cursor.execute(query,(user_type.genero, user_type.orien_sex, user_type.edad,
                                 user_type.pais, user_type.provincia))
              type_user = 'usuario'
-
-        elif isinstance(user_type, DatosProfesional):
+        elif isinstance(user_type, Profesional):
             query = """
                     INSERT INTO profesionales (provincia, cod_postal, especialidad_id)
                         VALUES (%s, %s, %s)
@@ -78,6 +82,28 @@ def add_user(user_type: UserType):
         return {"message": output}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"error al recoger datos: {str(e)}")
+
+#@app.get("/decission_tree")
+#def decission_tree():
+#    preguntas_respuestas = get_info('usuario')
+    # Ya que tengo las preguntas, hacer estructura
+#    while 
+#    print(preguntas_respuestas['preguntas_respuestas'][0])
+#    return {"message": preguntas_respuestas}
+
+@app.get("/add_interaction")
+def register_click(type_user: str):
+    try:
+        conn = open_database()
+        cursor = conn.cursor()
+        if type_user == 'usuario':
+            query = """
+                    INSERT INTO profesionales (provincia, cod_postal, especialidad_id)
+                        VALUES (%s, %s, %s)
+                    """
+            cursor.execute(query,(user_type.provincia, user_type.cod_postal,
+                                user_type.especialidad_id))
+            
 
 if __name__ == "__main__":
     uvicorn.run(app, host="127.0.0.1", port=8000)
