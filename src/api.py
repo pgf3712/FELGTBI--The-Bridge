@@ -1,16 +1,33 @@
 from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
+from typing import Union, Literal
 import uvicorn
 from utils import *
+
 app = FastAPI()
 
-# Modelo de entrada para validar la solicitud
+# Clases 
+
+class DatosUsuario(BaseModel):
+    tipo: Literal["usuario"]
+    genero: str
+    orien_sex: str
+    edad: int
+    pais: str
+    provincia: str
+
+class DatosProfesional(BaseModel):
+    tipo: Literal["profesional"]
+    provincia: str
+    cod_postal: int
+    especialidad_id: int
+
+# Si unimos las clases, podremos diferenciarlas al pasarlas como parametros en el endpoint add_user
+UserType = Union[DatosUsuario, DatosProfesional]
 
 @app.get("/")
 def home():
     return {"message": "Bienvenido al chatbot basado en árboles de decisión para orientación sobre el vih."}
-
-#Devuelve preguntas y respuestas dependiendo del tipo de usuario
 
 @app.get("/q_and_a")
 def get_info(user_rol:str):
@@ -26,7 +43,39 @@ def get_info(user_rol:str):
                 """
         cursor.execute(query, (user_rol,))
         preguntas_respuestas = cursor.fetchall()
-        return preguntas_respuestas
+        conn.close()
+        return {"preguntas_respuestas": preguntas_respuestas}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"error al recoger datos: {str(e)}")
+    
+@app.post("/add_user")
+def add_user(user_type: UserType):
+    try:    
+        conn = open_database()
+        cursor = conn.cursor()
+
+        if isinstance(user_type, DatosUsuario):
+             query = """
+                    INSERT INTO usuarios (genero, orien_sex, edad, pais, provincia)
+                        VALUES (%s, %s, %s, %s, %s)
+                    """
+             cursor.execute(query,(user_type.genero, user_type.orien_sex, user_type.edad,
+                                user_type.pais, user_type.provincia))
+             type_user = 'usuario'
+
+        elif isinstance(user_type, DatosProfesional):
+            query = """
+                    INSERT INTO profesionales (provincia, cod_postal, especialidad_id)
+                        VALUES (%s, %s, %s)
+                    """
+            cursor.execute(query,(user_type.provincia, user_type.cod_postal,
+                                user_type.especialidad_id))
+            type_user = 'profesional'
+
+        conn.commit()
+        conn.close()
+        output = f"{type_user} registrado exitosamente"
+        return {"message": output}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"error al recoger datos: {str(e)}")
 
