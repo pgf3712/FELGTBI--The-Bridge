@@ -8,7 +8,7 @@ from src.utils import *
 app = FastAPI()
 
 # Configuración de CORS
-origins = ["http://localhost:5173/", "https://zero0-proyecto-final-frontend.onrender.com/"]
+origins = ["http://localhost:5173/", "https://zero0-proyecto-final-frontend.onrender.com"]
 
 app.add_middleware(
     CORSMiddleware,
