@@ -23,6 +23,7 @@ class Profesional(BaseModel):
     especialidad_id: int
 
 class Interaction(BaseModel):
+    tipo: Literal["profesional", "usuario"]
     interactor_id: int
     pregunta_id: int
     respuesta_id: int
@@ -85,19 +86,22 @@ def add_user(user_type: UserType):
 
 
 
-#@app.get("/add_interaction")
-#def register_click(type_user: str):
-#    try:
-#        conn = open_database()
-#        cursor = conn.cursor()
-#        if type_user == 'usuario':
-#            query = """
-#                    INSERT INTO profesionales (provincia, cod_postal, especialidad_id)
-#                        VALUES (%s, %s, %s)
-#                    """
-#            cursor.execute(query,(user_type.provincia, user_type.cod_postal,
-#                                user_type.especialidad_id))
+@app.get("/add_interaction")
+def register_click(interaction: Interaction):
+    try:
+        conn = open_database()
+        cursor = conn.cursor()
+        if interaction.tipo == 'usuario':
+            query = """
+                    INSERT INTO interacciones (usuario_id, pregunta_id, respuesta_id)
+                        VALUES (%s, %s, %s)
+                    """
+            cursor.execute(query,(user_type.provincia, user_type.cod_postal,
+                                user_type.especialidad_id))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"error al recoger datos: {str(e)}")
             
+
 
 if __name__ == "__main__":
     uvicorn.run(app, host="127.0.0.1", port=8000)
