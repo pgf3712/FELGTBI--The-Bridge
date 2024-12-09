@@ -2,8 +2,10 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from typing import Union, Literal
 import uvicorn
+from dotenv import load_dotenv
 from src.utils import *
 
+load_dotenv()
 app = FastAPI()
 
 # Clases 
@@ -78,6 +80,6 @@ def add_user(user_type: UserType):
         return {"message": output}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"error al recoger datos: {str(e)}")
-
+    
 if __name__ == "__main__":
-    uvicorn.run(app, host="127.0.0.1", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=int(os.getenv("PORT")))
