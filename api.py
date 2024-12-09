@@ -84,9 +84,6 @@ def add_user(user_type: UserType):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"error al recoger datos: {str(e)}")
 
-<<<<<<< HEAD:api.py
-
-
 @app.post("/add_interaction")
 def register_click(interaction: Interaction):
     try:
@@ -117,16 +114,6 @@ def register_click(interaction: Interaction):
 #def model_invoke():
 #     llm = cargar_modelo()
 #     llm.invoke()
-=======
-#@app.get("/decission_tree")
-#def decission_tree():
-#    preguntas_respuestas = get_info('usuario')
-    # Ya que tengo las preguntas, hacer estructura
-#    while 
-#    print(preguntas_respuestas['preguntas_respuestas'][0])
-#    return {"message": preguntas_respuestas}
-            
->>>>>>> ruben:src/api.py
 
 if __name__ == "__main__":
     uvicorn.run(app, host="127.0.0.1", port=8000)
