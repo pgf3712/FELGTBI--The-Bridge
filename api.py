@@ -1,10 +1,19 @@
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Union, Literal
 import uvicorn
 from src.utils import *
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173/"],  # Origen permitido
+    allow_credentials=True,                   # Permitir cookies y credenciales
+    allow_methods=[""],                      # Permitir todos los métodos (GET, POST, PUT, etc.)
+    allow_headers=[""],                      # Permitir todos los headers
+)
 
 # Clases 
 
