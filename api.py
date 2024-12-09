@@ -83,26 +83,20 @@ def add_user(user_type: UserType):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"error al recoger datos: {str(e)}")
 
-#@app.get("/decission_tree")
-#def decission_tree():
-#    preguntas_respuestas = get_info('usuario')
-    # Ya que tengo las preguntas, hacer estructura
-#    while 
-#    print(preguntas_respuestas['preguntas_respuestas'][0])
-#    return {"message": preguntas_respuestas}
 
-@app.get("/add_interaction")
-def register_click(type_user: str):
-    try:
-        conn = open_database()
-        cursor = conn.cursor()
-        if type_user == 'usuario':
-            query = """
-                    INSERT INTO profesionales (provincia, cod_postal, especialidad_id)
-                        VALUES (%s, %s, %s)
-                    """
-            cursor.execute(query,(user_type.provincia, user_type.cod_postal,
-                                user_type.especialidad_id))
+
+#@app.get("/add_interaction")
+#def register_click(type_user: str):
+#    try:
+#        conn = open_database()
+#        cursor = conn.cursor()
+#        if type_user == 'usuario':
+#            query = """
+#                    INSERT INTO profesionales (provincia, cod_postal, especialidad_id)
+#                        VALUES (%s, %s, %s)
+#                    """
+#            cursor.execute(query,(user_type.provincia, user_type.cod_postal,
+#                                user_type.especialidad_id))
             
 
 if __name__ == "__main__":
