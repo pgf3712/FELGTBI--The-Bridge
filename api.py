@@ -9,7 +9,7 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173/"],  # Origen permitido
+    allow_origins=["http://localhost:5173/", "https://zero0-proyecto-final-frontend.onrender.com/"],  # Origen permitido
     allow_credentials=True,                   # Permitir cookies y credenciales
     allow_methods=[""],                      # Permitir todos los métodos (GET, POST, PUT, etc.)
     allow_headers=[""],                      # Permitir todos los headers
