@@ -5,7 +5,7 @@ from langchain_google_genai import GoogleGenerativeAI
 # Configurar tu modelo LLM (reemplaza `mi_llm` con la instancia real)
 mi_llm = GoogleGenerativeAI(model="gemini-1.5-flash", google_api_key='AIzaSyBgSkq0-KfOSa9l3R8gfAbmKiCI7UuqhfI')
 
-ruta_pdf = "../data/VIH1.pdf"  # Cambia esto por la ruta real de tu archivo
+ruta_pdf = "../data/VIH.pdf"  # Cambia esto por la ruta real de tu archivo
 try:
     # Leer el PDF y preprocesar el text
     texto_pdf = leer_pdf(ruta_pdf)
