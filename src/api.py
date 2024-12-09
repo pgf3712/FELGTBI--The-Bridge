@@ -90,19 +90,6 @@ def add_user(user_type: UserType):
 #    while 
 #    print(preguntas_respuestas['preguntas_respuestas'][0])
 #    return {"message": preguntas_respuestas}
-
-@app.get("/add_interaction")
-def register_click(type_user: str):
-    try:
-        conn = open_database()
-        cursor = conn.cursor()
-        if type_user == 'usuario':
-            query = """
-                    INSERT INTO profesionales (provincia, cod_postal, especialidad_id)
-                        VALUES (%s, %s, %s)
-                    """
-            cursor.execute(query,(user_type.provincia, user_type.cod_postal,
-                                user_type.especialidad_id))
             
 
 if __name__ == "__main__":
