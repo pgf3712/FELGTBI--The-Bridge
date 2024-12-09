@@ -111,6 +111,11 @@ def register_click(interaction: Interaction):
         return {"message": output}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"error al guardar interacción: {str(e)}")
+    
+#@app.get("/model_answer")
+#def model_invoke():
+#     llm = cargar_modelo()
+#     llm.invoke()
 
 if __name__ == "__main__":
     uvicorn.run(app, host="127.0.0.1", port=8000)
