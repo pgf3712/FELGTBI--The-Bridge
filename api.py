@@ -2,7 +2,7 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from typing import Union, Literal
 import uvicorn
-from utils import *
+from src.utils import *
 
 app = FastAPI()
 
