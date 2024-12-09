@@ -7,14 +7,16 @@ from src.utils import *
 
 app = FastAPI()
 
+# Configuración de CORS
+origins = ["http://localhost:5173/", "https://zero0-proyecto-final-frontend.onrender.com/"]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173/", "https://zero0-proyecto-final-frontend.onrender.com/"],  # Origen permitido
-    allow_credentials=True,                   # Permitir cookies y credenciales
-    allow_methods=[""],                      # Permitir todos los métodos (GET, POST, PUT, etc.)
-    allow_headers=[""],                      # Permitir todos los headers
+    allow_origins=origins,  # Permitir solo estas URLs
+    allow_credentials=True,  # Permitir envío de cookies o credenciales
+    allow_methods=["*"],  # Permitir todos los métodos HTTP
+    allow_headers=["*"],  # Permitir todos los encabezados
 )
-
 # Clases 
 
 class DatosUsuario(BaseModel):
