@@ -32,6 +32,12 @@ class Interaction(BaseModel):
     pregunta_id: int
     respuesta_id: int
 
+class Modelo(BaseModel):
+    usuario: Usuario
+    interactor_id: int
+    pregunta_id: int
+    respuesta_id: int
+
 # Si unimos las clases, podremos diferenciarlas al pasarlas como parametros en el endpoint add_user
 UserType = Union[Usuario, Profesional]
 
@@ -117,14 +123,35 @@ def register_click(interaction: Interaction):
 @app.get("/model_answer")
 def model_answer(input: str):   
     try:
-        #conn = open_database()
-        #cursor = conn.cursor()
-        #query = 
+        conn = open_database()
+        cursor = conn.cursor()
+        query = 
         respuesta_agente = llm.invoke(input)
         return respuesta_agente
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"error al guardar interacción: {str(e)}")
      
+prompt_fin = """
+            Soy una persona usuaria que busca información sobre VIH, 
+            mi código postal es {codigo_postal}, soy de {pais}, tengo {edad} años, 
+            me identifico con el género {genero} y mi orientación sexual es {orien_sex}. 
+            Estas son mis opciones {decision_path} y necesito que me ayudes. 
+            Quiero que actúes como un asistente experto en vih. 
+            El usuario, con las características anteriores, ha interactuado contigo, 
+            y necesito que le des unas respuestas y atención personalizada en relación 
+            a sus características personales, siempre informándole en un tono profesional, 
+            amigable y calmado para que el usuario no entre en estado de alarma. 
+            Siempre sé amable, comprensivo y compasivo. 
+            Informa al usuario en relación a su decision path {decision_path} 
+            con un lenguaje claro y sin demasiados tecnicismos, 
+            que lo pueda entender fácilmente.
+
+            El mensaje de respuesta debe ser breve, directo y con el estilo de un post profesional en LinkedIn(sin hastags). 
+            Usa un tono conciso, claro y accesible, evitando tecnicismos innecesarios. 
+            Limita la longitud a unas pocas oraciones clave que destaquen lo más importante de manera atractiva y profesional.
+            Debes escribir siempre vih en minúsculas.
+            Usa emojis amistosos
+            """
 
 if __name__ == "__main__":
     uvicorn.run(app, host="127.0.0.1", port=8000)
