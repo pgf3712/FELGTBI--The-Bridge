@@ -21,6 +21,9 @@ from langchain_community.agent_toolkits import create_sql_agent
 from langchain_google_genai import GoogleGenerativeAI
 from PyPDF2 import PdfReader
 from langchain.agents import AgentExecutor
+from langchain.sql_database import SQLDatabase
+from langchain_community.utilities import SQLDatabase
+
 
 
 def open_database():
@@ -148,3 +151,34 @@ os.environ["GPLACES_API_KEY"] = ""
 places = GooglePlacesTool()
 
 places.run("centro de salud en 28922")
+
+
+####### AGENTE SQL ##########
+
+
+# Paso 1: Configurar la API Key de Gemini (Google)
+os.environ['GOOGLE_API_KEY'] = ''
+
+# Configura tu conexión a la base de datos
+HOST_BBDD = "chatbott-1.cd8842m827w5.eu-north-1.rds.amazonaws.com"
+USERNAME_BBDD = "postgresadmin"
+PASSWORD_BBDD = "somosinteligentes"
+DB_NAME = "chatbot"
+DB_PORT=5432
+
+# Crear el motor SQLAlchemy para conectarse a PostgreSQL
+engine = create_engine(f'postgresql://{USERNAME_BBDD}:{PASSWORD_BBDD}@{HOST_BBDD}:{DB_PORT}/{DB_NAME}')
+
+# Probar la conexión
+try:
+    with engine.connect() as conn:
+        print("Conexión exitosa a PostgreSQL")
+except Exception as e:
+    print(f"Error al conectar a PostgreSQL: {e}")
+
+db = SQLDatabase(engine)
+agent_executor = create_sql_agent(llm, db=db, verbose=True)
+
+consulta = f"Eres un asistente experto en VIH. Un usuario ha interactuado contigo y quiere saber {input}. Busca información en la tabla respuestas para proporcionarle la información más adecuada, si tienes un enlace proporcionalo" 
+agent_executor.invoke(consulta)
+
