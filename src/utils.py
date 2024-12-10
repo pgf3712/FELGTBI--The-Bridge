@@ -147,4 +147,4 @@ os.environ["GPLACES_API_KEY"] = "AIzaSyCQx4fnQrEbq2D-Zrxxlvbi1solzTQeZBk"
 
 places = GooglePlacesTool()
 
-places.run("centro de salud en 28702")
+places.run("centro de salud en 28922")
