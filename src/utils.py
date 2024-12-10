@@ -143,7 +143,7 @@ def create_agent(llm) -> AgentExecutor:
 
 from langchain_community.tools import GooglePlacesTool
 
-os.environ["GPLACES_API_KEY"] = "AIzaSyCQx4fnQrEbq2D-Zrxxlvbi1solzTQeZBk"
+os.environ["GPLACES_API_KEY"] = ""
 
 places = GooglePlacesTool()
 
