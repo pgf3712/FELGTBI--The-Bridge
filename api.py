@@ -5,7 +5,11 @@ import uvicorn
 from src.utils import *
 
 app = FastAPI()
-
+llm = load_llm_prueba()
+ruta_pdf = "./data/pdf_vih.pdf" 
+texto_pdf = leer_pdf(ruta_pdf)
+fragmentos = preprocesar_texto(texto_pdf)
+texto_completo = " ".join(fragmentos)
 # Clases 
 
 class Usuario(BaseModel):
@@ -110,10 +114,17 @@ def register_click(interaction: Interaction):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"error al guardar interacción: {str(e)}")
     
-#@app.get("/model_answer")
-#def model_invoke():
-#     llm = cargar_modelo()
-#     llm.invoke()
+@app.get("/model_answer")
+def model_answer(input: str):   
+    try:
+        #conn = open_database()
+        #cursor = conn.cursor()
+        #query = 
+        respuesta_agente = llm.invoke(input)
+        return respuesta_agente
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"error al guardar interacción: {str(e)}")
+     
 
 if __name__ == "__main__":
     uvicorn.run(app, host="127.0.0.1", port=8000)
