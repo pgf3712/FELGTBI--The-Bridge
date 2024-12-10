@@ -136,3 +136,15 @@ def create_agent(llm) -> AgentExecutor:
         verbose=True
     )
     return agent_executor
+
+
+####### AGENTE GOOGLE PLACES ########
+
+
+from langchain_community.tools import GooglePlacesTool
+
+os.environ["GPLACES_API_KEY"] = "AIzaSyCQx4fnQrEbq2D-Zrxxlvbi1solzTQeZBk"
+
+places = GooglePlacesTool()
+
+places.run("centro de salud en 28702")
