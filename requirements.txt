@@ -22,6 +22,7 @@ google-auth==2.36.0
 google-auth-httplib2==0.2.0
 google-generativeai==0.8.3
 googleapis-common-protos==1.66.0
+googlemaps==4.10.0
 grpcio==1.68.1
 grpcio-status==1.68.1
 h11==0.14.0
@@ -35,9 +36,9 @@ Jinja2==3.1.4
 joblib==1.4.2
 jsonpatch==1.33
 jsonpointer==3.0.0
-langchain==0.3.10
-langchain-community==0.3.10
-langchain-core==0.3.22
+langchain==0.3.11
+langchain-community==0.3.11
+langchain-core==0.3.24
 langchain-google-genai==2.0.6
 langchain-huggingface==0.1.2
 langchain-text-splitters==0.3.2
@@ -65,6 +66,7 @@ pydantic_core==2.27.1
 pyparsing==3.2.0
 pypdf==5.1.0
 PyPDF2==3.0.1
+pyshorteners==1.0.1
 python-dateutil==2.9.0.post0
 python-dotenv==1.0.1
 pytz==2024.2

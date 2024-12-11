@@ -5,6 +5,7 @@ from typing import Union, Literal
 import uvicorn
 from string import Template
 from src.utils import *
+from langchain_community.tools import GooglePlacesTool
 
 app = FastAPI()
 
@@ -22,6 +23,7 @@ app.add_middleware(
 ruta_pdf = "./data/pdf_vih.pdf" 
 chunks = load_pdf(ruta_pdf)
 llm = load_llm(agent="pdf", chunks = chunks)
+places = GooglePlacesTool(google_api_key=os.getenv('GPLACES_API_KEY'))
 
 # Clases 
 
@@ -132,7 +134,7 @@ def register_click(interaction: Interaction):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"error al guardar interacción: {str(e)}")
     
-@app.post("/model_answer")
+@app.post("/model_answer_usuario")
 def model_answer(data: PromptData):   
     try:
         prompt_fin = Template("""
@@ -151,8 +153,8 @@ def model_answer(data: PromptData):
             Usa un tono conciso, claro y accesible, evitando tecnicismos innecesarios. 
             Limita la longitud a unas pocas oraciones clave que destaquen lo más importante de manera atractiva y profesional.
             Debes escribir siempre vih en minúsculas.
-            Usa emojis amistosos
             """)
+        
         conn = open_database()
         cursor = conn.cursor()
         query = """
@@ -163,7 +165,6 @@ def model_answer(data: PromptData):
                 """
         cursor.execute(query)
         user_data = cursor.fetchone()
-        print((user_data))
         prompt_fin = prompt_fin.substitute(
             codigo_postal=data.codigo_postal,
             pais=user_data[0],
@@ -172,12 +173,85 @@ def model_answer(data: PromptData):
             orien_sex=user_data[3],
             decision_path=data.decision_path,
             query=data.input)
-        print(user_data)
-        print(prompt_fin)
         respuesta_agente = llm.invoke(prompt_fin)
         return respuesta_agente['result']
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"error al llamar al modelo: {str(e)}")
+    
+@app.post("/model_answer_profesional")
+def model_answer(data: PromptData):   
+    try:
+        prompt_fin = Template("""
+            Eres un asistente experto en vih.
+            Un sociosanitario ha dicho lo siguiente: $query, 
+            su código postal es $codigo_postal y es de $provincia.
+            Estas son sus opciones $decision_path y necesito que le ayudes. 
+            
+            Dale respuestas y atención personalizada, siempre informándole en un tono profesional, 
+            Siempre sé amable, comprensivo y compasivo. 
+            Toma en cuenta su consulta: $query 
+
+            El mensaje de respuesta debe ser breve, directo y con el estilo de un post profesional en LinkedIn(sin hastags). 
+            Usa un tono conciso, claro y accesible, evitando tecnicismos innecesarios. 
+            Limita la longitud a unas pocas oraciones clave que destaquen lo más importante de manera atractiva y profesional.
+            Debes escribir siempre vih en minúsculas.
+            """)
+        
+        conn = open_database()
+        cursor = conn.cursor()
+        query = """
+                    SELECT p.provincia, p.cod_postal, e.especialidad, a.ambito 
+                    FROM profesionales p
+                    INNER JOIN especialidades AS e ON e.especialidad_id = p.especialidad_id
+                    INNER JOIN ambitos AS a ON a.ambito_id = e.ambito_id
+                    ORDER BY profesional_id DESC
+                    LIMIT 1;
+                """
+        cursor.execute(query)
+        pro_data = cursor.fetchone()
+        
+        prompt_fin = prompt_fin.substitute(
+            codigo_postal=pro_data[1],
+            provincia=pro_data[0],
+            especialidad=pro_data[2],
+            ambito=pro_data[3],
+            decision_path=data.decision_path,
+            query=data.input)
+        respuesta_agente = llm.invoke(prompt_fin)
+
+        return respuesta_agente['result']
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"error al llamar al modelo: {str(e)}")
+# Inicializar la herramienta de Google Places
+
+@app.get("/get_places")
+def get_places(provincia: str, cod_postal: str):
+    query = f"centro de salud en {provincia}, código postal {cod_postal}"
+    try:
+        places_str = places.run(query)
+        pattern = re.compile(r"(\d+)\.\s*(.*?)\nAddress:\s*(.*?)\nGoogle place ID:\s*(.*?)\nPhone:\s*(.*?)\nWebsite:\s*(.*?)\n",re.DOTALL)
+        matches = pattern.findall(places_str)
+
+        locations = []
+        for match in matches:
+            locations.append({
+                "id": int(match[0]),
+                "name": match[1].strip(),
+                "address": match[2].strip(),
+                "phone": match[4].strip() if match[4].strip() != "Unknown" else None,
+                "website": match[5].strip() if match[5].strip() != "Unknown" else None,
+            })
+
+        str_places = ""
+        for location in locations[:3]:
+            str_places += f"**{location["name"]}** \n - Dirección: {location["address"]} \n- Teléfono: {location["phone"]} \n- Web: {acortar_url(location["website"])}"       
+        str_chat = f"Te dejo una serie de sitios a los que puedes acudir en {provincia} según tu código postal ({cod_postal}):" + str_places
+        return {"message": str_chat}
+    except Exception as e:
+        return {
+            "message": "Ocurrió un error al consultar Google Places",
+            "error": str(e)
+        }
 
 if __name__ == "__main__":
     uvicorn.run(app, host="127.0.0.1", port=8000)
