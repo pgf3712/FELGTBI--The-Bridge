@@ -14,6 +14,7 @@ from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain_google_genai import GoogleGenerativeAI
 from langchain_community.vectorstores import FAISS
 from PyPDF2 import PdfReader
+import pyshorteners
 
 load_dotenv()
 
@@ -52,6 +53,14 @@ def load_llm(agent: str, chunks):
         retriever = db.as_retriever()
         llm = RetrievalQA.from_chain_type(llm=llm,chain_type="stuff",retriever=retriever, return_source_documents=True)
     return llm
+
+def acortar_url(url):
+    try:
+        shortener = pyshorteners.Shortener()
+        short_url = shortener.tinyurl.short(url)
+        return short_url
+    except:
+        return "No encontrado"
 
 def leer_pdf(ruta_pdf):
     """
