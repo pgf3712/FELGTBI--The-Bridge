@@ -2,14 +2,15 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from typing import Union, Literal
 import uvicorn
+from string import Template
 from src.utils import *
 
 app = FastAPI()
-llm = load_llm_prueba()
+
 ruta_pdf = "./data/pdf_vih.pdf" 
-texto_pdf = leer_pdf(ruta_pdf)
-fragmentos = preprocesar_texto(texto_pdf)
-texto_completo = " ".join(fragmentos)
+chunks = load_pdf(ruta_pdf)
+llm = load_llm(agent="pdf", chunks = chunks)
+
 # Clases 
 
 class Usuario(BaseModel):
@@ -32,11 +33,10 @@ class Interaction(BaseModel):
     pregunta_id: int
     respuesta_id: int
 
-class Modelo(BaseModel):
-    usuario: Usuario
-    interactor_id: int
-    pregunta_id: int
-    respuesta_id: int
+class PromptData(BaseModel):
+    input: str
+    codigo_postal: int
+    decision_path: list
 
 # Si unimos las clases, podremos diferenciarlas al pasarlas como parametros en el endpoint add_user
 UserType = Union[Usuario, Profesional]
@@ -120,9 +120,27 @@ def register_click(interaction: Interaction):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"error al guardar interacción: {str(e)}")
     
-@app.get("/model_answer")
-def model_answer(input: str):   
+@app.post("/model_answer")
+def model_answer(data: PromptData):   
     try:
+        prompt_fin = Template("""
+            Eres un asistente experto en vih.
+            El usuario ha dicho lo siguiente: $query, 
+            su código postal es $codigo_postal, es de $pais, tiene $edad años, 
+            se identifica con el género $genero y su orientación sexual es $orien_sex. 
+            Estas son sus opciones $decision_path y necesito que le ayudes. 
+            
+            Dale respuestas y atención personalizada, siempre informándole en un tono profesional, 
+            amigable y calmado para que el usuario no entre en estado de alarma. 
+            Siempre sé amable, comprensivo y compasivo. 
+            Toma en cuenta su consulta: $query 
+
+            El mensaje de respuesta debe ser breve, directo y con el estilo de un post profesional en LinkedIn(sin hastags). 
+            Usa un tono conciso, claro y accesible, evitando tecnicismos innecesarios. 
+            Limita la longitud a unas pocas oraciones clave que destaquen lo más importante de manera atractiva y profesional.
+            Debes escribir siempre vih en minúsculas.
+            Usa emojis amistosos
+            """)
         conn = open_database()
         cursor = conn.cursor()
         query = """
@@ -131,35 +149,23 @@ def model_answer(input: str):
                     ORDER BY usuario_id DESC
                     LIMIT 1;
                 """
-        cursor.execute()
+        cursor.execute(query)
         user_data = cursor.fetchone()
+        print((user_data))
+        prompt_fin = prompt_fin.substitute(
+            codigo_postal=data.codigo_postal,
+            pais=user_data[0],
+            edad=user_data[1],
+            genero=user_data[2],
+            orien_sex=user_data[3],
+            decision_path=data.decision_path,
+            query=data.input)
         print(user_data)
-        respuesta_agente = llm.invoke(input)
-        return respuesta_agente
+        print(prompt_fin)
+        respuesta_agente = llm.invoke(prompt_fin)
+        return respuesta_agente['result']
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"error al guardar interacción: {str(e)}")
-     
-prompt_fin = """
-            Soy una persona usuaria que busca información sobre VIH, 
-            mi código postal es {codigo_postal}, soy de {pais}, tengo {edad} años, 
-            me identifico con el género {genero} y mi orientación sexual es {orien_sex}. 
-            Estas son mis opciones {decision_path} y necesito que me ayudes. 
-            Quiero que actúes como un asistente experto en vih. 
-            El usuario, con las características anteriores, ha interactuado contigo, 
-            y necesito que le des unas respuestas y atención personalizada en relación 
-            a sus características personales, siempre informándole en un tono profesional, 
-            amigable y calmado para que el usuario no entre en estado de alarma. 
-            Siempre sé amable, comprensivo y compasivo. 
-            Informa al usuario en relación a su decision path {decision_path} 
-            con un lenguaje claro y sin demasiados tecnicismos, 
-            que lo pueda entender fácilmente.
-
-            El mensaje de respuesta debe ser breve, directo y con el estilo de un post profesional en LinkedIn(sin hastags). 
-            Usa un tono conciso, claro y accesible, evitando tecnicismos innecesarios. 
-            Limita la longitud a unas pocas oraciones clave que destaquen lo más importante de manera atractiva y profesional.
-            Debes escribir siempre vih en minúsculas.
-            Usa emojis amistosos
-            """
+        raise HTTPException(status_code=500, detail=f"error al llamar al modelo: {str(e)}")
 
 if __name__ == "__main__":
     uvicorn.run(app, host="127.0.0.1", port=8000)
