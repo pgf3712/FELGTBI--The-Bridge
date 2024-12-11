@@ -5,6 +5,7 @@ import re
 from langchain.chains import RetrievalQA
 from dotenv import load_dotenv
 from langchain.document_loaders import PyPDFLoader
+from langchain_community.document_loaders import PyPDFLoader
 from langchain.agents import initialize_agent, Tool, AgentExecutor
 from sqlalchemy import create_engine
 from langchain.chains.question_answering import load_qa_chain
@@ -49,7 +50,7 @@ def load_llm(agent: str, chunks):
         embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001", google_api_key=os.getenv('GEMINI_API_KEY'))
         db = FAISS.from_documents(chunks, embeddings)
         retriever = db.as_retriever()
-        llm = RetrievalQA.from_chain_type(llm=llm,chain_type="stuff",retriever=retriever)
+        llm = RetrievalQA.from_chain_type(llm=llm,chain_type="stuff",retriever=retriever, return_source_documents=True)
     return llm
 
 def leer_pdf(ruta_pdf):
