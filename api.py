@@ -125,7 +125,15 @@ def model_answer(input: str):
     try:
         conn = open_database()
         cursor = conn.cursor()
-        query = 
+        query = """
+                    SELECT pais, edad, genero, orien_sex
+                    FROM usuarios
+                    ORDER BY usuario_id DESC
+                    LIMIT 1;
+                """
+        cursor.execute()
+        user_data = cursor.fetchone()
+        print(user_data)
         respuesta_agente = llm.invoke(input)
         return respuesta_agente
     except Exception as e:
