@@ -4,7 +4,7 @@ import os
 import re
 from langchain.chains import RetrievalQA
 from dotenv import load_dotenv
-from langchain.document_loaders import PyPDFLoader
+#from langchain.document_loaders import PyPDFLoader
 from langchain_community.document_loaders import PyPDFLoader
 from langchain.agents import initialize_agent, Tool, AgentExecutor
 from sqlalchemy import create_engine
