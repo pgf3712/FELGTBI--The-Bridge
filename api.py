@@ -122,7 +122,7 @@ def register_click(interaction: Interaction):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"error al guardar interacción: {str(e)}")
     
-@app.post("/model_answer")
+@app.post("/model_answer_usuario")
 def model_answer(data: PromptData):   
     try:
         prompt_fin = Template("""
@@ -166,6 +166,50 @@ def model_answer(data: PromptData):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"error al llamar al modelo: {str(e)}")
     
+@app.post("/model_answer_profesional")
+def model_answer(data: PromptData):   
+    try:
+        prompt_fin = Template("""
+            Eres un asistente experto en vih.
+            Un sociosanitario ha dicho lo siguiente: $query, 
+            su código postal es $codigo_postal y es de $provincia.
+            Estas son sus opciones $decision_path y necesito que le ayudes. 
+            
+            Dale respuestas y atención personalizada, siempre informándole en un tono profesional, 
+            Siempre sé amable, comprensivo y compasivo. 
+            Toma en cuenta su consulta: $query 
+
+            El mensaje de respuesta debe ser breve, directo y con el estilo de un post profesional en LinkedIn(sin hastags). 
+            Usa un tono conciso, claro y accesible, evitando tecnicismos innecesarios. 
+            Limita la longitud a unas pocas oraciones clave que destaquen lo más importante de manera atractiva y profesional.
+            Debes escribir siempre vih en minúsculas.
+            """)
+        
+        conn = open_database()
+        cursor = conn.cursor()
+        query = """
+                    SELECT p.provincia, p.cod_postal, e.especialidad, a.ambito 
+                    FROM profesionales p
+                    INNER JOIN especialidades AS e ON e.especialidad_id = p.especialidad_id
+                    INNER JOIN ambitos AS a ON a.ambito_id = e.ambito_id
+                    ORDER BY profesional_id DESC
+                    LIMIT 1;
+                """
+        cursor.execute(query)
+        pro_data = cursor.fetchone()
+        
+        prompt_fin = prompt_fin.substitute(
+            codigo_postal=pro_data[1],
+            provincia=pro_data[0],
+            especialidad=pro_data[2],
+            ambito=pro_data[3],
+            decision_path=data.decision_path,
+            query=data.input)
+        respuesta_agente = llm.invoke(prompt_fin)
+
+        return respuesta_agente['result']
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"error al llamar al modelo: {str(e)}")
 # Inicializar la herramienta de Google Places
 
 @app.get("/get_places")
@@ -185,7 +229,7 @@ def get_places(provincia: str, cod_postal: str):
                 "phone": match[4].strip() if match[4].strip() != "Unknown" else None,
                 "website": match[5].strip() if match[5].strip() != "Unknown" else None,
             })
-            
+
         str_places = ""
         for location in locations[:3]:
             str_places += f"**{location["name"]}** \n - Dirección: {location["address"]} \n- Teléfono: {location["phone"]} \n- Web: {acortar_url(location["website"])}"       
