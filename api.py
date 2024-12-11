@@ -8,7 +8,7 @@ from src.utils import *
 app = FastAPI()
 
 # Configuración de CORS
-origins = ["http://localhost:5173/", "https://zero0-proyecto-final-frontend.onrender.com", "https://felgtbi-the-bridge.onrender.com/",]
+origins = ["http://localhost:5173", "https://zero0-proyecto-final-frontend.onrender.com", "https://felgtbi-the-bridge.onrender.com/",]
 
 app.add_middleware(
     CORSMiddleware,
@@ -18,7 +18,6 @@ app.add_middleware(
     allow_headers=["*"],  # Permitir todos los encabezados
 )
 
-app = FastAPI()
 llm = load_llm_prueba()
 ruta_pdf = "./data/pdf_vih.pdf" 
 texto_pdf = leer_pdf(ruta_pdf)
