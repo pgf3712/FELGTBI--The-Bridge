@@ -16,7 +16,7 @@ pdf_agent = load_llm(agent='pdf', chunks = chunks)
 
 
 prompt_fin = Template("""
-            Eres un asistente experto en vih. 
+            Eres un asistente experto en vih.
             El usuario ha dicho lo siguiente: $query, 
             su código postal es $codigo_postal, es de $pais, tiene $edad años, 
             se identifica con el género $genero y su orientación sexual es $orien_sex. 
