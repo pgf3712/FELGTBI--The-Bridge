@@ -83,7 +83,7 @@ def load_llm(agent: str, chunks):
         embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001", google_api_key=os.getenv('GEMINI_API_KEY'))
         db = FAISS.from_documents(chunks, embeddings)
         retriever = db.as_retriever()
-        llm = RetrievalQA.from_chain_type(llm=llm,chain_type="stuff",retriever=retriever, return_source_documents=True)
+        llm = RetrievalQA.from_chain_type(llm=llm,chain_type="stuff",retriever=retriever)
     return llm
 
 def acortar_url(url):

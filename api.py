@@ -123,6 +123,7 @@ async def model_answer():
             Usa un tono conciso, claro y accesible, evitando tecnicismos innecesarios. 
             Limita la longitud a unas pocas oraciones clave que destaquen lo más importante de manera atractiva y profesional.
             Debes escribir siempre vih en minúsculas.
+            Si tienes algún enlace que puedas proporcionarle, envialo
             """)
         conn = open_database()
         cursor = conn.cursor()
@@ -174,6 +175,7 @@ async def model_answer():
             Usa un tono conciso, claro y accesible, evitando tecnicismos innecesarios. 
             Limita la longitud a unas pocas oraciones clave que destaquen lo más importante de manera atractiva y profesional.
             Debes escribir siempre vih en minúsculas.
+            Si tienes algún enlace que puedas proporcionarle, envialo
             """)
         
         # Query datos profesional
