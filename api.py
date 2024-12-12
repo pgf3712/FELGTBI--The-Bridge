@@ -1,6 +1,4 @@
 from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
-from typing import Union, Literal
 import uvicorn
 from string import Template
 from src.utils import *
@@ -13,42 +11,14 @@ chunks = load_pdf(ruta_pdf)
 llm = load_llm(agent="pdf", chunks = chunks)
 places = GooglePlacesTool(google_api_key=os.getenv('GPLACES_API_KEY'))
 
-# Clases 
 
-class Usuario(BaseModel):
-    tipo: Literal["usuario"]
-    genero: str
-    orien_sex: str
-    edad: int
-    pais: str
-    provincia: str
-
-class Profesional(BaseModel):
-    tipo: Literal["profesional"]
-    provincia: str
-    cod_postal: int
-    especialidad_id: int
-
-class Interaction(BaseModel):
-    tipo: Literal["profesional", "usuario"]
-    interactor_id: int
-    pregunta_id: int
-    respuesta_id: int
-
-class PromptData(BaseModel):
-    input: str
-    codigo_postal: int
-    decision_path: list
-
-# Si unimos las clases, podremos diferenciarlas al pasarlas como parametros en el endpoint add_user
-UserType = Union[Usuario, Profesional]
 
 @app.get("/")
-def home():
+async def home():
     return {"message": "Bienvenido al chatbot basado en árboles de decisión para orientación sobre el vih."}
 
 @app.get("/q_and_a")
-def get_info(user_rol:str):
+async def get_info(user_rol:str):
     try:
         conn = open_database()
         cursor = conn.cursor()
@@ -67,7 +37,7 @@ def get_info(user_rol:str):
         raise HTTPException(status_code=500, detail=f"error al recoger datos: {str(e)}")
     
 @app.post("/add_user")
-def add_user(user_type: UserType):
+async def add_user(user_type: UserType):
     try:    
         conn = open_database()
         cursor = conn.cursor()
@@ -97,7 +67,7 @@ def add_user(user_type: UserType):
         raise HTTPException(status_code=500, detail=f"error al recoger datos: {str(e)}")
 
 @app.post("/add_interaction")
-def register_click(interaction: Interaction):
+async def register_click(interaction: Interaction):
     try:
         conn = open_database()
         cursor = conn.cursor()
@@ -122,62 +92,69 @@ def register_click(interaction: Interaction):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"error al guardar interacción: {str(e)}")
     
-@app.post("/model_answer_usuario")
-def model_answer(data: PromptData):   
+@app.get("/model_answer_usuario")
+async def model_answer():   
     try:
         prompt_fin = Template("""
             Eres un asistente experto en vih.
-            El usuario ha dicho lo siguiente: $query, 
-            su código postal es $codigo_postal, es de $pais, tiene $edad años, 
+            El usuario ha buscado lo siguiente: $decision_path. 
+            Vive en es $provincia, es de $pais, tiene $edad años, 
             se identifica con el género $genero y su orientación sexual es $orien_sex. 
-            Estas son sus opciones $decision_path y necesito que le ayudes. 
             
             Dale respuestas y atención personalizada, siempre informándole en un tono profesional, 
             amigable y calmado para que el usuario no entre en estado de alarma. 
             Siempre sé amable, comprensivo y compasivo. 
-            Toma en cuenta su consulta: $query 
 
             El mensaje de respuesta debe ser breve, directo y con el estilo de un post profesional en LinkedIn(sin hastags). 
             Usa un tono conciso, claro y accesible, evitando tecnicismos innecesarios. 
             Limita la longitud a unas pocas oraciones clave que destaquen lo más importante de manera atractiva y profesional.
             Debes escribir siempre vih en minúsculas.
             """)
-        
         conn = open_database()
         cursor = conn.cursor()
+        
+        # Query datos usuario
         query = """
-                    SELECT pais, edad, genero, orien_sex
+                    SELECT pais, edad, genero, orien_sex, provincia, usuario_id
                     FROM usuarios
                     ORDER BY usuario_id DESC
                     LIMIT 1;
                 """
         cursor.execute(query)
         user_data = cursor.fetchone()
+        #Query decision_path
+        query = """
+                select respuesta from interacciones as i
+                INNER JOIN preguntas_respuestas as pr ON i.respuesta_id = pr.respuesta_id
+                INNER JOIN respuestas as r on pr.respuesta_id = r.respuesta_id
+                WHERE i.usuario_id = %s
+                """
+        cursor.execute(query, (user_data[5],))
+        decision_path = cursor.fetchall()
+
         prompt_fin = prompt_fin.substitute(
-            codigo_postal=data.codigo_postal,
             pais=user_data[0],
             edad=user_data[1],
             genero=user_data[2],
             orien_sex=user_data[3],
-            decision_path=data.decision_path,
-            query=data.input)
+            provincia=user_data[4],
+            decision_path=decision_path)
         respuesta_agente = llm.invoke(prompt_fin)
+        conn.close()
         return respuesta_agente['result']
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"error al llamar al modelo: {str(e)}")
     
-@app.post("/model_answer_profesional")
-def model_answer(data: PromptData):   
+@app.get("/model_answer_profesional")
+async def model_answer():   
     try:
         prompt_fin = Template("""
             Eres un asistente experto en vih.
-            Un sociosanitario ha dicho lo siguiente: $query, 
+            Un sociosanitario en el ambito de $ambito (concretamente $especialidad) ha buscado lo siguiente: $decision_path, 
             su código postal es $codigo_postal y es de $provincia.
-            Estas son sus opciones $decision_path y necesito que le ayudes. 
             
             Dale respuestas y atención personalizada, siempre informándole en un tono profesional, 
             Siempre sé amable, comprensivo y compasivo. 
-            Toma en cuenta su consulta: $query 
 
             El mensaje de respuesta debe ser breve, directo y con el estilo de un post profesional en LinkedIn(sin hastags). 
             Usa un tono conciso, claro y accesible, evitando tecnicismos innecesarios. 
@@ -185,10 +162,11 @@ def model_answer(data: PromptData):
             Debes escribir siempre vih en minúsculas.
             """)
         
+        # Query datos profesional
         conn = open_database()
         cursor = conn.cursor()
         query = """
-                    SELECT p.provincia, p.cod_postal, e.especialidad, a.ambito 
+                    SELECT p.provincia, p.cod_postal, e.especialidad, a.ambito, p.profesional_id
                     FROM profesionales p
                     INNER JOIN especialidades AS e ON e.especialidad_id = p.especialidad_id
                     INNER JOIN ambitos AS a ON a.ambito_id = e.ambito_id
@@ -197,23 +175,31 @@ def model_answer(data: PromptData):
                 """
         cursor.execute(query)
         pro_data = cursor.fetchone()
+        # Query decision_path
+        query = """
+                select respuesta from interacciones as i
+                INNER JOIN preguntas_respuestas as pr ON i.respuesta_id = pr.respuesta_id
+                INNER JOIN respuestas as r on pr.respuesta_id = r.respuesta_id
+                WHERE i.profesional_id = %s
+                """
+        cursor.execute(query, (pro_data[4],))
+        decision_path = cursor.fetchall()
         
         prompt_fin = prompt_fin.substitute(
             codigo_postal=pro_data[1],
             provincia=pro_data[0],
             especialidad=pro_data[2],
             ambito=pro_data[3],
-            decision_path=data.decision_path,
-            query=data.input)
+            decision_path=decision_path)
         respuesta_agente = llm.invoke(prompt_fin)
-
+        conn.close()
         return respuesta_agente['result']
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"error al llamar al modelo: {str(e)}")
 # Inicializar la herramienta de Google Places
 
 @app.get("/get_places")
-def get_places(provincia: str, cod_postal: str):
+async def get_places(provincia: str, cod_postal: str):
     query = f"centro de salud en {provincia}, código postal {cod_postal}"
     try:
         places_str = places.run(query)
@@ -240,6 +226,6 @@ def get_places(provincia: str, cod_postal: str):
             "message": "Ocurrió un error al consultar Google Places",
             "error": str(e)
         }
-
+    
 if __name__ == "__main__":
     uvicorn.run(app, host="127.0.0.1", port=8000)
