@@ -15,8 +15,40 @@ from langchain_google_genai import GoogleGenerativeAI
 from langchain_community.vectorstores import FAISS
 from PyPDF2 import PdfReader
 import pyshorteners
+from pydantic import BaseModel
+from typing import Union, Literal
 
 load_dotenv()
+
+# Clases 
+
+class Usuario(BaseModel):
+    tipo: Literal["usuario"]
+    genero: str
+    orien_sex: str
+    edad: int
+    pais: str
+    provincia: str
+
+class Profesional(BaseModel):
+    tipo: Literal["profesional"]
+    provincia: str
+    cod_postal: int
+    especialidad_id: int
+
+class Interaction(BaseModel):
+    tipo: Literal["profesional", "usuario"]
+    interactor_id: int
+    pregunta_id: int
+    respuesta_id: int
+
+class PromptData(BaseModel):
+    input: str
+    codigo_postal: int
+    decision_path: list
+
+# Si unimos las clases, podremos diferenciarlas al pasarlas como parametros en el endpoint add_user
+UserType = Union[Usuario, Profesional]
 
 def open_database():
     """
