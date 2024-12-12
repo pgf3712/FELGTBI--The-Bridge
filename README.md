@@ -38,7 +38,7 @@
 
 ---
 
-## Tecnologías Utilizadas
+## Estrategia Digital
 - **IA Personalizada**:
   - GEMINI: modelo de lenguaje avanzado para adaptabilidad y personalización.
 - **Infraestructura**:
