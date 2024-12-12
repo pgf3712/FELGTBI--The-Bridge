@@ -76,6 +76,10 @@
 
 ---
 
+![QR Demo](images/arbol.png)
+
+---
+
 ## Tecnologías Utilizadas
 
 - **Lenguaje de Programación:** Python
