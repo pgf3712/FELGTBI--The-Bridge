@@ -112,10 +112,10 @@ async def model_answer():
         prompt_fin = Template("""
             Eres un asistente experto en vih.
             El usuario ha buscado lo siguiente: $decision_path. 
-            Vive en es $provincia, es de $pais, tiene $edad años, 
+            Vive en $provincia, es de $pais, tiene $edad años, 
             se identifica con el género $genero y su orientación sexual es $orien_sex. 
             
-            Dale respuestas y atención personalizada, siempre informándole en un tono profesional, 
+            Dale respuestas y atención personalizada, interseccionales, e inclusivas. siempre informándole en un tono profesional, 
             amigable y calmado para que el usuario no entre en estado de alarma. 
             Siempre sé amable, comprensivo y compasivo. 
 
@@ -123,7 +123,6 @@ async def model_answer():
             Usa un tono conciso, claro y accesible, evitando tecnicismos innecesarios. 
             Limita la longitud a unas pocas oraciones clave que destaquen lo más importante de manera atractiva y profesional.
             Debes escribir siempre vih en minúsculas.
-            Si tienes algún enlace que puedas proporcionarle, envialo
             """)
         conn = open_database()
         cursor = conn.cursor()
@@ -168,14 +167,13 @@ async def model_answer():
             Un sociosanitario en el ambito de $ambito (concretamente $especialidad) ha buscado lo siguiente: $decision_path, 
             su código postal es $codigo_postal y es de $provincia.
             
-            Dale respuestas y atención personalizada, siempre informándole en un tono profesional, 
+            Dale respuestas y atención personalizada, interseccionales, e inclusivas.  siempre informándole en un tono profesional, 
             Siempre sé amable, comprensivo y compasivo. 
 
             El mensaje de respuesta debe ser breve, directo y con el estilo de un post profesional en LinkedIn(sin hastags). 
             Usa un tono conciso, claro y accesible, evitando tecnicismos innecesarios. 
             Limita la longitud a unas pocas oraciones clave que destaquen lo más importante de manera atractiva y profesional.
             Debes escribir siempre vih en minúsculas.
-            Si tienes algún enlace que puedas proporcionarle, envialo
             """)
         
         # Query datos profesional
