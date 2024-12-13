@@ -6,77 +6,16 @@
 
 ## Descripción
 
-**EVE** es un chatbot desarrollado en colaboración con **FELGTBI+** (Federación Estatal de Lesbianas, Gais, Trans, Bisexuales, Intersexuales y más). Este chatbot tiene como objetivo proporcionar información accesible y personalizada para reducir el estigma asociado al vih y ofrecer recursos educativos y clínicos tanto a usuarios como a profesionales de la salud.
-
----
-
-## Valores Fundamentales
-1. **Interseccionalidad**: Reconocer y respetar las múltiples identidades de las personas usuarias.
-2. **Accesibilidad**: Hacer la información y los recursos disponibles para todos.
-3. **Confidencialidad**: Garantizar la seguridad de los datos y la privacidad.
-4. **Fiabilidad Funcional**: Respuestas precisas y servicios consistentes.
-
----
-
-## Funcionalidades Principales
-### Para Personas Usuarias:
-- **Información sobre vih e ITS**:
-  - Tipos de pruebas disponibles y centros cercanos.
-  - Probabilidad de riesgo y confidencialidad médica.
-  - Derechos laborales y sociales.
-  - Métodos de prevención como PrEP y PEP.
-- **Recursos Educativos**:
-  - Normalización del vih.
-  - Guías para pacientes con diagnóstico reciente.
-- **Soporte Psicológico**:
-  - Atención y derivación profesional.
-
-### Para Profesionales de la Salud:
-- Consultas sobre manejo clínico.
-- Coinfecciones asociadas al vih.
-- Recursos educativos actualizados.
-
----
-
-## Estrategia Digital
-- **IA Personalizada**:
-  - GEMINI: modelo de lenguaje avanzado para adaptabilidad y personalización.
-- **Infraestructura**:
-  - AWS para escalabilidad y seguridad.
-  - PostgreSQL para gestión eficiente de datos.
-- **Desarrollo Integral**:
-  - Conexión optimizada entre frontend y backend.
-  - Interfaz intuitiva para una experiencia de usuario amigable.
-
----
-
-## Seguridad
-- **Modelo de Amenazas**: Identificación y mitigación de riesgos potenciales.
-- **Medidas de Protección**:
-  - Hardening del sistema.
-  - Análisis estático de código.
-  - Pruebas de penetración (Pentest).
-  - Mantenimiento continuo.
-
----
-
-## Impacto Comunitario
-- **Reducción del Estigma**: Ayuda a normalizar y educar sobre el vih.
-- **Acceso a Recursos**: Promueve la prevención con herramientas como PrEP y PEP.
-- **Apoyo a Profesionales**: Proporciona información actualizada y recursos clínicos.
+**EVE** es un chatbot desarrollado en colaboración con **FELGTBI+** (Federación Estatal de Lesbianas, Gais, Trans, Bisexuales, Intersexuales y más). Este chatbot tiene como objetivo proporcionar información accesible y personalizada para reducir el estigma asociado al VIH y ofrecer recursos educativos y clínicos tanto a usuarios como a profesionales de la salud.
 
 ---
 
 ## Funcionalidades Principales
 
-- **Información sobre prevención, diagnóstico y tratamiento del vih.**
+- **Información sobre prevención, diagnóstico y tratamiento del VIH.**
 - **Recursos para apoyo emocional y manejo clínico.**
-- **Adaptación del contenido según el perfil del usuario (personas con vih o profesionales).**
+- **Adaptación del contenido según el perfil del usuario (personas con VIH o profesionales).**
 - **Recopilación de datos estadísticos anónimos para mejorar el servicio.**
-
----
-
-![QR Demo](images/arbol.png)
 
 ---
 
@@ -164,8 +103,4 @@ Para más información sobre el proyecto o colaboración, contacta a través de 
 
 ### Imágenes del Proyecto
 
-<<<<<<< HEAD
 ![Equipo de Desarrollo](images/equipo.png)
-=======
-![Equipo de Desarrollo](images/equipo.png)
->>>>>>> b0f5b69a13080709ea2b78ab355a46767c760b32
