@@ -164,7 +164,6 @@ Para más información sobre el proyecto o colaboración, contacta a través de 
 
 ### Imágenes del Proyecto
 
-<<<<<<< HEAD
 ![Equipo de Desarrollo](images/equipo.png)
 =======
 
